@@ -177,9 +177,72 @@
       color: #4ade80;
       margin-top: 8px;
     }
+
+    .password-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      font-size: 0.7rem;
+      color: #e94560;
+    }
+
+    .password-overlay.hidden {
+      display: none;
+    }
+
+    .password-overlay .pwd-input {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.5rem;
+      width: 180px;
+      padding: 12px;
+      margin: 15px 0;
+      text-align: center;
+      background: #0d0d1a;
+      border: 2px solid #e94560;
+      color: #fff;
+      border-radius: 4px;
+    }
+
+    .password-overlay .pwd-err {
+      font-size: 0.4rem;
+      color: #e94560;
+      margin-top: 8px;
+      min-height: 1.2em;
+    }
+
+    .password-overlay button {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.6rem;
+      padding: 15px 25px;
+      margin-top: 10px;
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .password-overlay button:hover {
+      background: #ff6b6b;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
+  <div id="passwordOverlay" class="password-overlay">
+    <span>🔐 비밀번호를 입력하세요</span>
+    <input type="password" id="passwordInput" class="pwd-input" placeholder="비밀번호" autocomplete="off">
+    <button type="button" id="passwordBtn">입장</button>
+    <p id="passwordErr" class="pwd-err"></p>
+    <p class="pwd-err" style="margin-top:20px; font-size:0.35rem; color:#888;">비밀번호 화면이 안 보이면 시크릿 창으로 열어보세요.</p>
+  </div>
+
+  <div id="gameSection">
   <h1>🐍 스네이크 게임<br>알을 먹으면 길어져요!</h1>
 
   <div class="wrapper">
@@ -190,6 +253,7 @@
         <div id="startRankingList">(기록 없음)</div>
       </div>
       <button id="startBtn">시작하기</button>
+      <p style="margin-top:12px;"><a href="#" id="lockAgain" style="font-size:0.35rem; color:#888;">비밀번호 다시 입력</a></p>
     </div>
 
     <div id="gameOverOverlay" class="overlay hidden">
@@ -215,7 +279,56 @@
       <p class="controls">↑ ↓ ← → 방향키로 이동</p>
     </div>
   </div>
+  </div>
 
+  <script>
+    const GAME_PASSWORD = '3082';
+    const UNLOCK_KEY = 'snakeUnlocked';
+
+    const passwordOverlay = document.getElementById('passwordOverlay');
+    const gameSection = document.getElementById('gameSection');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordBtn = document.getElementById('passwordBtn');
+    const passwordErr = document.getElementById('passwordErr');
+
+    function checkUnlock() {
+      if (!passwordOverlay || !gameSection) return true;
+      if (sessionStorage.getItem(UNLOCK_KEY) === '1') {
+        passwordOverlay.classList.add('hidden');
+        gameSection.style.display = '';
+        return true;
+      }
+      passwordOverlay.classList.remove('hidden');
+      gameSection.style.display = 'none';
+      return false;
+    }
+
+    function doUnlock() {
+      const value = (passwordInput.value || '').trim();
+      if (value === GAME_PASSWORD) {
+        sessionStorage.setItem(UNLOCK_KEY, '1');
+        passwordErr.textContent = '';
+        passwordInput.value = '';
+        passwordOverlay.classList.add('hidden');
+        gameSection.style.display = '';
+        if (window.initAfterUnlock) initAfterUnlock();
+      } else {
+        passwordErr.textContent = '비밀번호가 올바르지 않습니다.';
+      }
+    }
+
+    if (!checkUnlock()) {
+      passwordBtn.addEventListener('click', doUnlock);
+      passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doUnlock(); });
+      if (passwordInput) passwordInput.focus();
+    }
+
+    document.getElementById('lockAgain')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem(UNLOCK_KEY);
+      location.reload();
+    });
+  </script>
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -533,11 +646,15 @@
     startBtn.addEventListener('click', startGame);
     restartBtn.addEventListener('click', startGame);
 
-    (async () => {
+    window.initAfterUnlock = async () => {
       await renderRankingList(startRankingList);
       initGame();
       draw();
-    })();
+    };
+
+    if (sessionStorage.getItem('snakeUnlocked') === '1') {
+      initAfterUnlock();
+    }
   </script>
 </body>
 </html>
