@@ -235,6 +235,10 @@
     const RANKING_KEY = 'snakeScoreRanking';
     const RANKING_MAX = 10;
 
+    const SUPABASE_URL = 'https://klnsmdfduffhdpkprwzo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsbnNtZGZkdWZmaGRwa3Byd3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDc0MjAsImV4cCI6MjA4ODc4MzQyMH0.Ck7LaSifZ12jbWNt0emZjQh9sYd3DVUEUXW-wyUKatw';
+    const USE_SUPABASE = SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR_');
+
     const startOverlay = document.getElementById('startOverlay');
     const gameOverOverlay = document.getElementById('gameOverOverlay');
     const startBtn = document.getElementById('startBtn');
@@ -248,7 +252,43 @@
     const startRankingList = document.getElementById('startRankingList');
     const gameOverRankingList = document.getElementById('gameOverRankingList');
 
-    function getRanking() {
+    async function getRankingFromSupabase() {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_ranking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+        },
+        body: '{}'
+      });
+      if (!res.ok) throw new Error('랭킹 조회 실패');
+      return res.json();
+    }
+
+    async function addScoreToSupabase(initials, score) {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/scores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ initials, score })
+      });
+      if (!res.ok) throw new Error('기록 실패');
+    }
+
+    async function getRanking() {
+      if (USE_SUPABASE) {
+        try {
+          return await getRankingFromSupabase();
+        } catch (e) {
+          console.warn('Supabase 랭킹 조회 실패:', e);
+          return [];
+        }
+      }
       try {
         const raw = localStorage.getItem(RANKING_KEY);
         return raw ? JSON.parse(raw) : [];
@@ -261,18 +301,32 @@
       localStorage.setItem(RANKING_KEY, JSON.stringify(list));
     }
 
-    function addToRanking(initials, score) {
-      let list = getRanking();
+    async function addToRanking(initials, scoreVal) {
       const name = String(initials).trim().toUpperCase().slice(0, 3) || '???';
-      list.push({ initials: name, score });
-      list.sort((a, b) => b.score - a.score);
-      list = list.slice(0, RANKING_MAX);
+      if (USE_SUPABASE) {
+        try {
+          await addScoreToSupabase(name, scoreVal);
+          return await getRanking();
+        } catch (e) {
+          console.warn('Supabase 기록 실패:', e);
+          return await getRanking();
+        }
+      }
+      let list = await getRanking();
+      list.push({ initials: name, score: scoreVal });
+      const byInitials = {};
+      for (const entry of list) {
+        if (!byInitials[entry.initials] || byInitials[entry.initials].score < entry.score) {
+          byInitials[entry.initials] = { initials: entry.initials, score: entry.score };
+        }
+      }
+      list = Object.values(byInitials).sort((a, b) => b.score - a.score).slice(0, RANKING_MAX);
       saveRanking(list);
       return list;
     }
 
-    function renderRankingList(containerEl) {
-      const list = getRanking();
+    async function renderRankingList(containerEl) {
+      const list = await getRanking();
       if (list.length === 0) {
         containerEl.innerHTML = '(기록 없음)';
         return;
@@ -407,14 +461,14 @@
       updateUI();
     }
 
-    function gameOver() {
+    async function gameOver() {
       gameRunning = false;
       if (gameInterval) clearInterval(gameInterval);
       finalScoreEl.textContent = '점수: ' + score;
       initialsInput.value = '';
       recordMsg.classList.add('hidden');
       recordMsg.textContent = '';
-      renderRankingList(gameOverRankingList);
+      await renderRankingList(gameOverRankingList);
       gameOverOverlay.classList.remove('hidden');
     }
 
@@ -459,12 +513,16 @@
       }
     });
 
-    recordBtn.addEventListener('click', () => {
+    recordBtn.addEventListener('click', async () => {
       const name = initialsInput.value.trim().toUpperCase().slice(0, 3) || '???';
-      addToRanking(name, score);
+      try {
+        await addToRanking(name, score);
+        await renderRankingList(gameOverRankingList);
+        recordMsg.textContent = '기록 완료!';
+      } catch (e) {
+        recordMsg.textContent = '기록 실패';
+      }
       initialsInput.value = '';
-      renderRankingList(gameOverRankingList);
-      recordMsg.textContent = '기록 완료!';
       recordMsg.classList.remove('hidden');
     });
 
@@ -475,9 +533,11 @@
     startBtn.addEventListener('click', startGame);
     restartBtn.addEventListener('click', startGame);
 
-    renderRankingList(startRankingList);
-    initGame();
-    draw();
+    (async () => {
+      await renderRankingList(startRankingList);
+      initGame();
+      draw();
+    })();
   </script>
 </body>
 </html>
