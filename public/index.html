@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>스네이크 게임 - 알을 먹어라!</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
 
     * {
       margin: 0;
@@ -20,13 +20,13 @@
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      font-family: 'Press Start 2P', cursive;
+      font-family: 'Nanum Gothic', sans-serif;
       color: #e94560;
       padding: 20px;
     }
 
     h1 {
-      font-size: 1.2rem;
+      font-size: 1.45rem;
       margin-bottom: 10px;
       text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
       text-align: center;
@@ -45,7 +45,7 @@
       display: flex;
       justify-content: space-between;
       margin-bottom: 15px;
-      font-size: 0.65rem;
+      font-size: 0.8rem;
       color: #eee;
     }
 
@@ -60,7 +60,7 @@
 
     .controls {
       margin-top: 15px;
-      font-size: 0.5rem;
+      font-size: 0.65rem;
       color: #888;
       text-align: center;
     }
@@ -76,7 +76,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 0.8rem;
+      font-size: 0.95rem;
       line-height: 2;
       z-index: 10;
       border-radius: 12px;
@@ -87,8 +87,8 @@
     }
 
     .overlay button {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.6rem;
+      font-family: 'Nanum Gothic', sans-serif;
+      font-size: 0.75rem;
       padding: 15px 25px;
       margin-top: 20px;
       background: #e94560;
@@ -118,14 +118,14 @@
       background: rgba(0, 0, 0, 0.3);
       border-radius: 8px;
       border: 1px solid rgba(233, 69, 96, 0.4);
-      font-size: 0.5rem;
+      font-size: 0.65rem;
       color: #ccc;
       max-height: 140px;
       overflow-y: auto;
     }
 
     .ranking-box h3 {
-      font-size: 0.5rem;
+      font-size: 0.65rem;
       color: #e94560;
       margin-bottom: 8px;
     }
@@ -142,8 +142,8 @@
     }
 
     .initials-input {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.5rem;
+      font-family: 'Nanum Gothic', sans-serif;
+      font-size: 0.65rem;
       width: 80px;
       padding: 8px;
       margin: 10px 0 5px;
@@ -161,7 +161,7 @@
 
     .record-btn {
       margin-top: 5px;
-      font-size: 0.45rem;
+      font-size: 0.55rem;
       padding: 10px 15px;
       background: #2d5a27;
       color: #4ade80;
@@ -173,7 +173,7 @@
     }
 
     .record-msg {
-      font-size: 0.45rem;
+      font-size: 0.55rem;
       color: #4ade80;
       margin-top: 8px;
     }
@@ -187,7 +187,7 @@
       align-items: center;
       justify-content: center;
       z-index: 100;
-      font-size: 0.7rem;
+      font-size: 0.9rem;
       color: #e94560;
     }
 
@@ -196,8 +196,8 @@
     }
 
     .password-overlay .pwd-input {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.5rem;
+      font-family: 'Nanum Gothic', sans-serif;
+      font-size: 0.65rem;
       width: 180px;
       padding: 12px;
       margin: 15px 0;
@@ -209,15 +209,15 @@
     }
 
     .password-overlay .pwd-err {
-      font-size: 0.4rem;
+      font-size: 0.5rem;
       color: #e94560;
       margin-top: 8px;
       min-height: 1.2em;
     }
 
     .password-overlay button {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.6rem;
+      font-family: 'Nanum Gothic', sans-serif;
+      font-size: 0.75rem;
       padding: 15px 25px;
       margin-top: 10px;
       background: #e94560;
@@ -239,7 +239,7 @@
     <input type="password" id="passwordInput" class="pwd-input" placeholder="비밀번호" autocomplete="off">
     <button type="button" id="passwordBtn">입장</button>
     <p id="passwordErr" class="pwd-err"></p>
-    <p class="pwd-err" style="margin-top:20px; font-size:0.35rem; color:#888;">비밀번호 화면이 안 보이면 시크릿/시크릿 창으로 열어보세요.</p>
+    <p class="pwd-err" style="margin-top:20px; font-size:0.45rem; color:#888;">비밀번호 화면이 안 보이면 시크릿/시크릿 창으로 열어보세요.</p>
   </div>
 
   <div id="gameSection" style="display: none;">
@@ -253,7 +253,7 @@
         <div id="startRankingList">(기록 없음)</div>
       </div>
       <button id="startBtn">시작하기</button>
-      <p style="margin-top:12px;"><a href="#" id="lockAgain" style="font-size:0.35rem; color:#888;">비밀번호 다시 입력</a></p>
+      <p style="margin-top:12px;"><a href="#" id="lockAgain" style="font-size:0.45rem; color:#888;">비밀번호 다시 입력</a></p>
     </div>
 
     <div id="gameOverOverlay" class="overlay hidden">
